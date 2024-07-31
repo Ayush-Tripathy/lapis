@@ -3,18 +3,18 @@
 #include "functions.h"
 #include "frameobj.h"
 
-static PyMethodDef PyFrameMethods[] = {
+static PyMethodDef LapisMethods[] = {
     {"read_csv", read_csv, METH_VARARGS, "Read the entire CSV file"},
     {NULL, NULL, 0, NULL}};
 
-static struct PyModuleDef pyframemodule = {
+static struct PyModuleDef lapismodule = {
     PyModuleDef_HEAD_INIT,
-    "pyf",
+    "lapis",
     NULL,
     -1,
-    PyFrameMethods};
+    LapisMethods};
 
-PyMODINIT_FUNC PyInit_pyf(void)
+PyMODINIT_FUNC PyInit_lapis(void)
 {
     PyObject *m;
     if (PyType_Ready(&FrameType) < 0)
@@ -22,7 +22,7 @@ PyMODINIT_FUNC PyInit_pyf(void)
         return NULL;
     }
 
-    m = PyModule_Create(&pyframemodule);
+    m = PyModule_Create(&lapismodule);
     if (m == NULL)
     {
         return NULL;

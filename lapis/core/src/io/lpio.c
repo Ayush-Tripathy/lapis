@@ -21,7 +21,7 @@ frame *_read_csv(
     }
     ccsv_row *row = ccsv_next(reader);
 
-    frame *f = frame_init(row->fields_count, row->fields);
+    frame *f = frame_init(row->fields_count, row->fields, MMAPPED, LP_FALSE);
     if (f == NULL)
     {
         ccsv_free_row(row);
@@ -32,16 +32,18 @@ frame *_read_csv(
     ccsv_free_row(row);
     ccsv_close(reader);
 
-    f->buffer = map_file(filename, &f->buffer_size);
-    if (f->buffer == NULL)
+    lp_storage_set_2d(f->storage, LP_TRUE);
+    f->storage->handle.mmapped->buffer = map_file(filename, &f->storage->handle.mmapped->buffer_size);
+
+    if (f->storage->handle.mmapped->buffer == NULL)
     {
         frame_free(f);
         return NULL;
     }
 
     size_t pos = 0, count = 0;
-    size_t buffer_size = f->buffer_size;
-    char *buffer = f->buffer;
+    size_t buffer_size = f->storage->handle.mmapped->buffer_size;
+    char *buffer = f->storage->handle.mmapped->buffer;
     size_t cols = f->cols;
 
     while (scan_fields_indexes(buffer, &pos, buffer_size, f, ',', '\"', '#', '\\'))

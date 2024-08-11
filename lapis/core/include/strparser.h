@@ -3,6 +3,7 @@
 #include <stdbool.h>
 
 #include "frame.h"
+#include "storage.h"
 
 typedef struct
 {

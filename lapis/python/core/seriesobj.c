@@ -23,7 +23,7 @@ static void Series_Free(Series *self)
 {
     field_series_free(self->_series);
     Py_TYPE(self)->tp_free((PyObject *)self);
-    Py_RETURN_NONE;
+    // Py_RETURN_NONE;
 }
 
 // __str__ method in Python
@@ -47,7 +47,7 @@ static PyObject *Series_Get_Item(Series *self, Py_ssize_t i)
         return NULL;
     }
 
-    ffield_t field = field_series_get(self->_series, i);
+    lp_field_t field = field_series_get(self->_series, i);
     PyObject *value = NULL;
     switch (field.dtype)
     {
@@ -105,7 +105,7 @@ PyTypeObject SeriesType = {
     // .tp_getset = Series_GetSet,
     .tp_new = Series_New,
     .tp_init = (initproc)Series_Init,
-    .tp_str = Series_Str,
+    .tp_str = (reprfunc)Series_Str,
     .tp_dealloc = (destructor)Series_Free,
     // .tp_methods = SeriesMethods,
     .tp_as_sequence = &Series_Sequence_Methods,

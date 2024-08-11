@@ -7,6 +7,8 @@
 #include "series.h"
 #include "ccsv.h"
 #include "strparser.h"
+#include "storage.h"
+#include "dynamicarray.h"
 
 frame *_read_csv(
     const char *filename,

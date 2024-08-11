@@ -36,7 +36,7 @@ bool scan_fields_indexes(
     bool actual_comment = false;
     size_t field_pos = 0, row_pos = 0;
     char ch = buffer[i];
-    field_series_t **field_series = f->series;
+    lp_storage_t *storage = f->storage;
     while (i < size && (!IS_TERMINATOR(ch) || (IS_TERMINATOR(ch) && in_quote)))
     {
         if (ch == ' ' && !in_quote && field_pos == 0)
@@ -71,7 +71,6 @@ bool scan_fields_indexes(
         {
             if (field_pos == 0)
             {
-                // printf("quote at start\n");
                 in_quote = true;
                 actual_quoted = true;
             }
@@ -89,7 +88,7 @@ bool scan_fields_indexes(
         else if (ch == comment_char && !in_quote && row_pos == 0)
         {
             actual_comment = true;
-            // // Increment the position till any non terminator character is found
+            // Increment the position till any non terminator character is found
             while (i < size && !IS_TERMINATOR(buffer[i]))
             {
                 i++;
@@ -105,12 +104,23 @@ bool scan_fields_indexes(
         }
         else if (ch == delim && !in_quote)
         {
-            ffield_t field = {
-                .start = start,
-                .end = end + 1,
-                .quoted = actual_quoted,
-            };
-            field_series_append(field_series[fields_count], field);
+            if (storage->type == MMAPPED)
+            {
+                lp_ffield_t field = {
+                    .start = start,
+                    .end = end + 1,
+                    .quoted = actual_quoted,
+                };
+
+                dynamic_array_push(storage->data.cols[fields_count], &field);
+            }
+            else if (storage->type == IN_MEMORY)
+            {
+                lp_mfield_t mfield = {
+                    .buffer = buffer + start,
+                    .quoted = actual_quoted};
+                dynamic_array_push(storage->data.fields, &mfield);
+            }
             fields_count++;
             start = i + 1;
             field_pos = -1;
@@ -123,7 +133,7 @@ bool scan_fields_indexes(
         row_pos++;
     }
 
-    ffield_t field = {
+    lp_ffield_t field = {
         .start = start,
         .end = end + 1,
         .quoted = actual_quoted,
@@ -131,7 +141,17 @@ bool scan_fields_indexes(
 
     if (!actual_comment)
     {
-        field_series_append(field_series[fields_count], field);
+        if (storage->type == MMAPPED)
+        {
+            dynamic_array_push(storage->data.cols[fields_count], &field);
+        }
+        else if (storage->type == IN_MEMORY)
+        {
+            lp_mfield_t mfield = {
+                .buffer = buffer + start,
+                .quoted = actual_quoted};
+            dynamic_array_push(storage->data.fields, &mfield);
+        }
     }
 
     // if (fields_count != f->cols - 1)

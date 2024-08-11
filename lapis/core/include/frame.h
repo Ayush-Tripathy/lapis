@@ -21,6 +21,9 @@ typedef struct
     size_t _mem_used;
     lp_storage_t *storage;
     lp_bool _is_view;
+    lp_bool _is_transposed;
+    size_t *_row_indexes;
+    size_t *_col_indexes;
 } frame;
 
 frame *frame_init(size_t cols, char **col_names, lp_storage_type type, lp_bool is_view);

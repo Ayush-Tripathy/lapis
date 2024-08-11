@@ -46,6 +46,13 @@ void frame_free(frame *f)
     if (f == NULL)
         return;
 
+    short is_view = f->_is_view;
+    if (is_view)
+    {
+        free(f->_row_indexes);
+        free(f->_col_indexes);
+    }
+
     lp_storage_free(f->storage);
     free(f);
 }

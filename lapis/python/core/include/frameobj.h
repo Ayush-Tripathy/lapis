@@ -8,10 +8,6 @@
 typedef struct Frame
 {
     PyObject_HEAD frame *_frame;
-    size_t *_row_indexes;
-    size_t *_col_indexes;
-    size_t _mem_size;
-    short _is_transposed;
 } Frame;
 
 extern PyTypeObject FrameType;

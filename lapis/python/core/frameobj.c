@@ -11,10 +11,6 @@ static PyObject *Frame_New(PyTypeObject *type, PyObject *args, PyObject *kwds)
     {
         // TODO: Required initialization
         self->_frame = NULL;
-        self->_row_indexes = NULL;
-        self->_col_indexes = NULL;
-        self->_mem_size = 0;
-        self->_is_transposed = 0;
     }
 
     return (PyObject *)self;
@@ -132,16 +128,14 @@ static PyObject *Frame_GetView(PyObject *self, size_t *row_indexes, size_t *col_
         return NULL;
     }
 
-    view->_mem_size = frame_mem_used(view->_frame);
     view->_frame->storage = frame->_frame->storage; // Share storage with parent frame
     frame->_frame->storage->ref_count++;            // Increment reference count
 
     view->_frame->rows = num_rows;
     view->_frame->cols = num_cols;
     view->_frame->_is_view = 1;
-
-    view->_row_indexes = row_indexes;
-    view->_col_indexes = col_indexes;
+    view->_frame->_row_indexes = row_indexes;
+    view->_frame->_col_indexes = col_indexes;
 
     return (PyObject *)view;
 }
@@ -208,9 +202,9 @@ static PyObject *Frame_GetRow(Frame *self, PyObject *args)
     short is_view = self->_frame->_is_view;
 
     // Calculate actual row index to return
-    if (is_view && self->_row_indexes != NULL)
+    if (is_view && self->_frame->_row_indexes != NULL)
     {
-        row = self->_row_indexes[row];
+        row = self->_frame->_row_indexes[row];
     }
 
     frame *f = self->_frame;
@@ -242,9 +236,9 @@ static PyObject *Frame_GetRow(Frame *self, PyObject *args)
     {
         // Calculate actual column index to return
         size_t col = i;
-        if (is_view && self->_col_indexes != NULL)
+        if (is_view && self->_frame->_col_indexes != NULL)
         {
-            col = self->_col_indexes[col];
+            col = self->_frame->_col_indexes[col];
         }
 
         lp_ffield_t *field = frame_get(f, row, col);
@@ -516,14 +510,6 @@ static PyObject *Frame_GetItem(Frame *self, PyObject *key)
 static PyObject *Frame_Free(Frame *self)
 {
     frame_free(self->_frame);
-
-    short is_view = self->_frame->_is_view;
-    if (is_view)
-    {
-        free(self->_row_indexes);
-        free(self->_col_indexes);
-    }
-
     Py_TYPE(self)->tp_free((PyObject *)self);
     Py_RETURN_NONE;
 }

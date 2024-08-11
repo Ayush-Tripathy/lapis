@@ -211,7 +211,7 @@ char *frame_str(frame *f)
     }
 
     // Attach shape
-    len = snprintf(str + pos, str_len - pos, "Shape: (%zu, %zu)\n", f->rows, f->cols);
+    len = snprintf(str + pos, str_len - pos, "Shape: (%zu, %zu)\n", f->rows - 1, f->cols);
 
     return str;
 }

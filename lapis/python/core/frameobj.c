@@ -13,8 +13,6 @@ static PyObject *Frame_New(PyTypeObject *type, PyObject *args, PyObject *kwds)
         self->_frame = NULL;
         self->_row_indexes = NULL;
         self->_col_indexes = NULL;
-        self->_num_rows = 0;
-        self->_num_cols = 0;
         self->_mem_size = 0;
         self->_is_transposed = 0;
     }
@@ -142,8 +140,6 @@ static PyObject *Frame_GetView(PyObject *self, size_t *row_indexes, size_t *col_
     view->_frame->cols = num_cols;
     view->_frame->_is_view = 1;
 
-    view->_num_rows = num_rows;
-    view->_num_cols = num_cols;
     view->_row_indexes = row_indexes;
     view->_col_indexes = col_indexes;
 
@@ -221,16 +217,8 @@ static PyObject *Frame_GetRow(Frame *self, PyObject *args)
     size_t cols;
     size_t rows;
 
-    if (is_view)
-    {
-        cols = self->_num_cols;
-        rows = self->_num_rows;
-    }
-    else
-    {
-        cols = f->cols;
-        rows = f->rows;
-    }
+    cols = f->cols;
+    rows = f->rows;
 
     char *buffer;
     if (f->storage->type == MMAPPED)

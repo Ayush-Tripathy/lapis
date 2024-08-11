@@ -29,7 +29,7 @@ PyMODINIT_FUNC PyInit_lapis(void)
     }
 
     Py_INCREF(&FrameType);
-    if (PyModule_AddObject(m, "Frame", (PyObject *)&FrameType) < 0)
+    if (PyModule_AddObject(m, "DataFrame", (PyObject *)&FrameType) < 0)
     {
         Py_DECREF(&FrameType);
         Py_DECREF(m);

@@ -10,7 +10,8 @@
 
 typedef struct {
     int* indexes;  
-    size_t count;  
+    size_t count; 
+} FilterResult; 
 
 
 typedef enum {

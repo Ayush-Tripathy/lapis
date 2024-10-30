@@ -51,17 +51,17 @@ static PyObject *Series_Get_Item(Series *self, Py_ssize_t i)
     PyObject *value = NULL;
     switch (field.dtype)
     {
-    case INT:
+    case LP_INT:
         value = PyLong_FromString(
             PyUnicode_AsUTF8(
                 PyUnicode_FromStringAndSize(field.buffer + field.start, field.end - field.start)),
             NULL, 10);
         break;
-    case FLOAT:
+    case LP_FLOAT:
         value = PyFloat_FromString(
             PyUnicode_FromStringAndSize(field.buffer + field.start, field.end - field.start));
         break;
-    case STRING:
+    case LP_STRING:
         value = PyUnicode_FromStringAndSize(field.buffer + field.start, field.end - field.start);
         break;
     default:

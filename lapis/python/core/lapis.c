@@ -4,7 +4,7 @@
 #include "frameobj.h"
 
 static PyMethodDef LapisMethods[] = {
-    {"read_csv", read_csv, METH_VARARGS, "Read the entire CSV file"},
+    {"read_csv", (PyCFunction)read_csv, METH_VARARGS | METH_KEYWORDS, "Reads a CSV file and returns a DataFrame."},
     {NULL, NULL, 0, NULL}};
 
 static struct PyModuleDef lapismodule = {

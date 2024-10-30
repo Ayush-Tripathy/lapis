@@ -492,6 +492,31 @@ static PyObject *Frame_GetRow(Frame *self, PyObject *args)
   return list;
 }
 
+static PyObject *Frame_GetHead(Frame *self, PyObject *count) {
+    size_t rows = PyLong_AsSize_t(count);
+        if (rows >= self->_frame->rows - 1)
+        {
+            PyErr_SetString(PyExc_IndexError, "Index out of bounds");
+            return NULL;
+        }
+
+        size_t num_rows = rows;
+        size_t num_cols = self->_frame->cols;
+
+        size_t *row_indexes = (size_t *)malloc(num_rows * sizeof(size_t));
+        if (row_indexes == NULL)
+        {
+            PyErr_SetString(PyExc_MemoryError, "Error allocating memory for row indexes");
+            return NULL;
+        }
+
+        for(size_t i = 0; i < rows; i++) {
+            row_indexes[i] = i;
+        }
+
+        return Frame_GetView((PyObject *)self, row_indexes, NULL, num_rows, num_cols);
+}
+
 // __getitem__ method in Python
 // TODO: Refactor this, too many if-else
 static PyObject *Frame_GetItem(Frame *self, PyObject *key)
@@ -785,6 +810,7 @@ static PyGetSetDef FrameGetSet[] = {
 
 static PyMethodDef FrameMethods[] = {
     {"get", (PyCFunction)Frame_GetRow, METH_VARARGS, "Get a row"},
+    {"head", (PyCFunction)Frame_GetHead, METH_VARARGS, "Get the head"},
     {NULL, NULL, 0, NULL}};
 
 // Frame type definition

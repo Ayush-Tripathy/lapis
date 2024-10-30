@@ -106,7 +106,7 @@ bool scan_fields_indexes(
         {
             if (storage->type == MMAPPED)
             {
-                lp_ffield_t field = {
+                lp_field_t field = {
                     .start = start,
                     .end = end + 1,
                     .quoted = actual_quoted,
@@ -116,7 +116,7 @@ bool scan_fields_indexes(
             }
             else if (storage->type == IN_MEMORY)
             {
-                lp_mfield_t mfield = {
+                lp_field_t mfield = {
                     .buffer = buffer + start,
                     .quoted = actual_quoted};
                 dynamic_array_push(storage->data.fields, &mfield);
@@ -133,7 +133,7 @@ bool scan_fields_indexes(
         row_pos++;
     }
 
-    lp_ffield_t field = {
+    lp_field_t field = {
         .start = start,
         .end = end + 1,
         .quoted = actual_quoted,
@@ -147,7 +147,7 @@ bool scan_fields_indexes(
         }
         else if (storage->type == IN_MEMORY)
         {
-            lp_mfield_t mfield = {
+            lp_field_t mfield = {
                 .buffer = buffer + start,
                 .quoted = actual_quoted};
             dynamic_array_push(storage->data.fields, &mfield);

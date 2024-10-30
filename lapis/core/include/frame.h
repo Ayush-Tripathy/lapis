@@ -24,11 +24,12 @@ typedef struct
     lp_bool _is_transposed;
     size_t *_row_indexes;
     size_t *_col_indexes;
+    lp_bool has_header;
 } frame;
 
-frame *frame_init(size_t cols, char **col_names, lp_storage_type type, lp_bool is_view);
+frame *frame_init(size_t cols, char **col_names, lp_storage_type type, lp_bool has_header, lp_bool is_view);
 void frame_free(frame *f);
-lp_ffield_t *frame_get(frame *f, size_t row, size_t col);
+lp_field_t *frame_get(frame *f, size_t row, size_t col);
 size_t frame_mem_used(frame *f);
 char *frame_str(frame *f);
 

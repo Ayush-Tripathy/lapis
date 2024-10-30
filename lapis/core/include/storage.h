@@ -26,9 +26,9 @@ typedef enum lp_storage_type
 /* Data types */
 typedef enum
 {
-    INT,
-    FLOAT,
-    STRING
+    LP_INT,
+    LP_FLOAT,
+    LP_STRING
 } lp_dtype;
 
 /* Shape of the data */
@@ -50,21 +50,21 @@ typedef struct
 } lp_field_t;
 
 /* Memory mapped field */
-typedef struct
-{
-    size_t start;
-    size_t end;
-    lp_bool quoted;
-    lp_dtype dtype;
-} lp_ffield_t;
+// typedef struct
+// {
+//     size_t start;
+//     size_t end;
+//     lp_bool quoted;
+//     lp_dtype dtype;
+// } lp_ffield_t;
 
 /* In-memory field */
-typedef struct mfield_t
-{
-    char *buffer;
-    lp_bool quoted;
-    lp_dtype dtype;
-} lp_mfield_t;
+// typedef struct mfield_t
+// {
+//     char *buffer;
+//     lp_bool quoted;
+//     lp_dtype dtype;
+// } lp_mfield_t;
 
 /* Memory mapped handle */
 typedef struct mmapped_t
@@ -78,12 +78,12 @@ typedef struct mmapped_t
 } lp_mmapped_t;
 
 /* In-memory handle, for 1D and 2D */
-typedef struct in_memory_t
-{
-    lp_shape _capacity;
-    size_t _mem_used;
-    lp_bool is_2d;
-} lp_in_memory_t;
+// typedef struct in_memory_t
+// {
+//     lp_shape _capacity;
+//     size_t _mem_used;
+//     lp_bool is_2d;
+// } lp_in_memory_t;
 
 // Memory mapped fields for 1D, 2D
 typedef union mmapped
@@ -114,8 +114,8 @@ typedef struct storage_t
 
     union
     {
-        lp_mmapped_t *mmapped;     /* Memory mapped handle */
-        lp_in_memory_t *in_memory; /* In-memory handle */
+        lp_mmapped_t *mmapped; /* Memory mapped handle */
+        // lp_in_memory_t *in_memory; /* In-memory handle */
     } handle;
 
     /* Data structures for storing actual data or references for 1D, 2D (column storage) */

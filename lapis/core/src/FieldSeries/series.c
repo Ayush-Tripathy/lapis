@@ -67,7 +67,7 @@ void field_series_free(field_series_t *series)
     free(series);
 }
 
-bool field_series_append(field_series_t *series, lp_ffield_t field, lp_mfield_t mfield)
+bool field_series_append(field_series_t *series, lp_field_t field, lp_field_t mfield)
 {
     if (series == NULL)
         return false;
@@ -111,13 +111,13 @@ lp_field_t field_series_get(field_series_t *series, size_t index)
     {
         // ffield_t field = {0, 0, false};
         // return field;
-        return (lp_field_t){0, 0, false, INT};
+        return (lp_field_t){0, 0, false, LP_INT};
     }
 
     // return series->fields[index];
     if (series->storage->type == MMAPPED)
     {
-        lp_ffield_t field = *(lp_ffield_t *)dynamic_array_get(series->storage->data.fields, index);
+        lp_field_t field = *(lp_field_t *)dynamic_array_get(series->storage->data.fields, index);
         return (lp_field_t){
             .start = field.start,
             .end = field.end,
@@ -126,7 +126,7 @@ lp_field_t field_series_get(field_series_t *series, size_t index)
     }
     else if (series->storage->type == IN_MEMORY)
     {
-        lp_mfield_t *field = ((lp_mfield_t *)dynamic_array_get(series->storage->data.fields, index));
+        lp_field_t *field = ((lp_field_t *)dynamic_array_get(series->storage->data.fields, index));
         return (lp_field_t){
             .buffer = field->buffer,
             .quoted = field->quoted,

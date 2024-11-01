@@ -6,5 +6,6 @@
 #include <stdlib.h>
 
 #include "storage.h"
+#include "logger.h"
 
 lp_dtype detect_type(char *input);

@@ -56,6 +56,11 @@ frame *_read_csv(
   }
 
   f->rows += count;
+  lp_shape shape = {
+      .rows = count,
+      .cols = cols,
+  };
+  lp_storage_set_shape(f->storage, shape);
 
   return f;
 }

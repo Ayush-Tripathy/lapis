@@ -6,14 +6,15 @@
 #include <string.h>
 
 #include "storage.h"
+#include "logger.h"
 
 typedef struct field_series_t
 {
-    size_t size;
-    size_t capacity;
-    lp_storage_t *storage;
-    char *name;
-    size_t _mem_used;
+  size_t size;
+  size_t capacity;
+  lp_storage_t *storage;
+  char *name;
+  size_t _mem_used;
 } field_series_t;
 
 field_series_t *field_series_init(char *name, lp_storage_type type);

@@ -9,6 +9,7 @@
 #include "strparser.h"
 #include "storage.h"
 #include "dynamicarray.h"
+#include "logger.h"
 
 frame *_read_csv(
     const char *filename,

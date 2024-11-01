@@ -23,3 +23,5 @@ static PyObject *Frame_GetMemSize(Frame *self, void *closure);
 static PyObject *Frame_GetRow(Frame *self, PyObject *args);
 static size_t Frame_GetLen(PyObject *self);
 static PyObject *Frame_GetView(PyObject *self, size_t *row_indexes, size_t *col_indexes, size_t num_rows, size_t num_cols);
+static PyObject *Frame_GetViewFromSlice(Frame *self, PyObject *key);
+static PyObject *Frame_GetViewFromRowIndex(Frame *self, PyObject *key);

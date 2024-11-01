@@ -4,11 +4,12 @@
 
 #include "frame.h"
 #include "storage.h"
+#include "logger.h"
 
 typedef struct
 {
-    size_t start;
-    size_t end;
+  size_t start;
+  size_t end;
 } ffield_tt;
 
 bool scan_fields_indexes(

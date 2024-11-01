@@ -373,7 +373,13 @@ static PyObject *Frame_GetView(PyObject *self, size_t *row_indexes, size_t *col_
 
 static size_t Frame_GetLen(PyObject *self)
 {
-  return ((Frame *)self)->_frame->rows - 1;
+  frame *f = ((Frame *)self)->_frame;
+  if (f->has_header)
+  {
+    return f->rows - 1;
+  }
+
+  return f->rows;
 }
 
 // Getter for num_rows
@@ -492,29 +498,31 @@ static PyObject *Frame_GetRow(Frame *self, PyObject *args)
   return list;
 }
 
-static PyObject *Frame_GetHead(Frame *self, PyObject *count) {
-    size_t rows = PyLong_AsSize_t(count);
-        if (rows >= self->_frame->rows - 1)
-        {
-            PyErr_SetString(PyExc_IndexError, "Index out of bounds");
-            return NULL;
-        }
+static PyObject *Frame_GetHead(Frame *self, PyObject *count)
+{
+  size_t rows = PyLong_AsSize_t(count);
+  if (rows >= self->_frame->rows - 1)
+  {
+    PyErr_SetString(PyExc_IndexError, "Index out of bounds");
+    return NULL;
+  }
 
-        size_t num_rows = rows;
-        size_t num_cols = self->_frame->cols;
+  size_t num_rows = rows;
+  size_t num_cols = self->_frame->cols;
 
-        size_t *row_indexes = (size_t *)malloc(num_rows * sizeof(size_t));
-        if (row_indexes == NULL)
-        {
-            PyErr_SetString(PyExc_MemoryError, "Error allocating memory for row indexes");
-            return NULL;
-        }
+  size_t *row_indexes = (size_t *)malloc(num_rows * sizeof(size_t));
+  if (row_indexes == NULL)
+  {
+    PyErr_SetString(PyExc_MemoryError, "Error allocating memory for row indexes");
+    return NULL;
+  }
 
-        for(size_t i = 0; i < rows; i++) {
-            row_indexes[i] = i;
-        }
+  for (size_t i = 0; i < rows; i++)
+  {
+    row_indexes[i] = i;
+  }
 
-        return Frame_GetView((PyObject *)self, row_indexes, NULL, num_rows, num_cols);
+  return Frame_GetView((PyObject *)self, row_indexes, NULL, num_rows, num_cols);
 }
 
 // __getitem__ method in Python
@@ -522,73 +530,17 @@ static PyObject *Frame_GetHead(Frame *self, PyObject *count) {
 static PyObject *Frame_GetItem(Frame *self, PyObject *key)
 {
   // Always return a view
-  if (PySlice_Check(key))
+  if (PySlice_Check(key)) /* [start:stop:step] */
   {
-    Py_ssize_t start, stop, step;
-    Py_ssize_t slicelength;
-    if (PySlice_GetIndicesEx(key, self->_frame->rows, &start, &stop, &step, &slicelength) == -1)
-    {
-      return NULL;
-    }
-
-    size_t num_rows = slicelength;
-    size_t num_cols = self->_frame->cols;
-
-    size_t *row_indexes = (size_t *)malloc(num_rows * sizeof(size_t) + 1);
-    if (row_indexes == NULL)
-    {
-      PyErr_SetString(PyExc_MemoryError, "Error allocating memory for row indexes");
-      return NULL;
-    }
-
-    // Attach header
-    row_indexes[0] = 0;
-    for (size_t i = 0; i < num_rows; i++)
-    {
-      if ((start + i + 1) >= self->_frame->rows)
-      {
-        PyErr_SetString(PyExc_IndexError, "Index out of bounds");
-        return NULL;
-      }
-      row_indexes[i + 1] = start + i + 1;
-    }
-
-    return Frame_GetView((PyObject *)self, row_indexes, NULL, num_rows, num_cols);
+    return Frame_GetViewFromSlice(self, key);
   }
 
-  if (PyLong_Check(key))
+  if (PyLong_Check(key)) /* [row] */
   {
-    size_t row = PyLong_AsSize_t(key);
-    if (row >= self->_frame->rows)
-    {
-      PyErr_SetString(PyExc_IndexError, "Index out of bounds");
-      return NULL;
-    }
-
-    size_t num_rows = 1;
-    size_t num_cols = self->_frame->cols;
-
-    size_t *row_indexes = (size_t *)malloc(num_rows * sizeof(size_t) + 1);
-    if (row_indexes == NULL)
-    {
-      PyErr_SetString(PyExc_MemoryError, "Error allocating memory for row indexes");
-      return NULL;
-    }
-
-    if (row + 1 >= self->_frame->rows)
-    {
-      PyErr_SetString(PyExc_IndexError, "Index out of bounds");
-      return NULL;
-    }
-
-    // Attach header
-    row_indexes[0] = 0;
-    row_indexes[1] = row + 1;
-
-    return Frame_GetView((PyObject *)self, row_indexes, NULL, num_rows, num_cols);
+    return Frame_GetViewFromRowIndex(self, key);
   }
 
-  if (PyTuple_Check(key))
+  if (PyTuple_Check(key)) /* [row, col] */
   {
     if (PyTuple_Size(key) != 2)
     {
@@ -599,7 +551,7 @@ static PyObject *Frame_GetItem(Frame *self, PyObject *key)
     PyObject *row_obj = PyTuple_GetItem(key, 0);
     PyObject *col_obj = PyTuple_GetItem(key, 1);
 
-    if (PySlice_Check(row_obj) && PySlice_Check(col_obj))
+    if (PySlice_Check(row_obj) && PySlice_Check(col_obj)) /* [rowstart:rowend:rowstep,colstart:colend:colstep] */
     {
       Py_ssize_t row_start, row_stop, row_step;
       Py_ssize_t row_slicelength;
@@ -647,7 +599,7 @@ static PyObject *Frame_GetItem(Frame *self, PyObject *key)
       return Frame_GetView((PyObject *)self, row_indexes, col_indexes, num_rows, num_cols);
     }
 
-    if (PySlice_Check(row_obj) && PyLong_Check(col_obj))
+    if (PySlice_Check(row_obj) && PyLong_Check(col_obj)) /* [rowstart:rowend:rowstep,col] */
     {
       Py_ssize_t start, stop, step;
       Py_ssize_t slicelength;
@@ -693,7 +645,7 @@ static PyObject *Frame_GetItem(Frame *self, PyObject *key)
       return Frame_GetView((PyObject *)self, row_indexes, col_indexes, num_rows, num_cols);
     }
 
-    if (PyLong_Check(row_obj) && PySlice_Check(col_obj))
+    if (PyLong_Check(row_obj) && PySlice_Check(col_obj)) /* [row,colstart:colend:colstep] */
     {
       size_t row = PyLong_AsSize_t(row_obj);
       if (row >= self->_frame->rows)
@@ -738,7 +690,7 @@ static PyObject *Frame_GetItem(Frame *self, PyObject *key)
       return Frame_GetView((PyObject *)self, row_indexes, col_indexes, num_rows, num_cols);
     }
 
-    if (PyLong_Check(row_obj) && PyLong_Check(col_obj))
+    if (PyLong_Check(row_obj) && PyLong_Check(col_obj)) /* [row,col] */
     {
       size_t row = PyLong_AsSize_t(row_obj);
       size_t col = PyLong_AsSize_t(col_obj);
@@ -780,6 +732,115 @@ static PyObject *Frame_GetItem(Frame *self, PyObject *key)
 
   PyErr_SetString(PyExc_TypeError, "Invalid key");
   return NULL;
+}
+
+static PyObject *Frame_GetViewFromSlice(Frame *self, PyObject *key)
+{
+  lp_bool has_header = self->_frame->has_header;
+  lp_shape shape = {
+      .rows = self->_frame->rows,
+      .cols = self->_frame->cols,
+  };
+
+  if (has_header)
+  {
+    shape.rows--;
+  }
+
+  Py_ssize_t start, stop, step;
+  Py_ssize_t slicelength;
+  if (PySlice_GetIndicesEx(key, shape.rows, &start, &stop, &step, &slicelength) == -1)
+  {
+    return NULL;
+  }
+
+  size_t num_rows = slicelength;
+  size_t num_cols = self->_frame->cols;
+
+  if (has_header)
+  {
+    num_rows++;
+  }
+
+  size_t *row_indexes = (size_t *)malloc(num_rows * sizeof(size_t));
+  if (row_indexes == NULL)
+  {
+    PyErr_SetString(PyExc_MemoryError, "Error allocating memory for row indexes");
+    return NULL;
+  }
+
+  // Attach header
+  if (has_header)
+  {
+    row_indexes[0] = 0;
+  }
+
+  lp_size_t k = 1;
+  if (step > 0) /* Positive step */
+  {
+    for (size_t i = start; i < stop; i += step)
+    {
+      row_indexes[k++] = i + 1;
+    }
+  }
+  else /* Negative step */
+  {
+    for (size_t i = start; i > stop; i += step)
+    {
+      row_indexes[k++] = i + 1;
+    }
+  }
+
+  return Frame_GetView((PyObject *)self, row_indexes, NULL, num_rows, num_cols);
+}
+
+static PyObject *Frame_GetViewFromRowIndex(Frame *self, PyObject *key)
+{
+  size_t row = PyLong_AsSize_t(key);
+  lp_shape shape = {
+      .rows = self->_frame->rows,
+      .cols = self->_frame->cols,
+  };
+
+  if (row >= shape.rows)
+  {
+    PyErr_SetString(PyExc_IndexError, "Index out of bounds");
+    return NULL;
+  }
+
+  size_t num_rows = 2;
+  size_t num_cols = self->_frame->cols;
+  lp_bool has_header = self->_frame->has_header;
+  lp_bool is_view = self->_frame->_is_view;
+
+  size_t *row_indexes = (size_t *)malloc(num_rows * sizeof(size_t));
+  if (row_indexes == NULL)
+  {
+    PyErr_SetString(PyExc_MemoryError, "Error allocating memory for row indexes");
+    return NULL;
+  }
+
+  // Attach header
+  if (has_header)
+  {
+    row_indexes[0] = 0;
+  }
+
+  if (is_view)
+  {
+    row = self->_frame->_row_indexes[has_header ? row + 1 : row];
+  }
+
+  if (has_header && !is_view)
+  {
+    row_indexes[1] = row + 1;
+  }
+  else
+  {
+    row_indexes[1] = row;
+  }
+
+  return Frame_GetView((PyObject *)self, row_indexes, NULL, num_rows, num_cols);
 }
 
 static PyObject *Frame_Free(Frame *self)

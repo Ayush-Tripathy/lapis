@@ -54,7 +54,7 @@ typedef struct shape
 } lp_shape;
 
 /* Generalized field */
-typedef struct
+typedef struct field_t
 {
   lp_char *buffer;
   lp_dtype dtype;

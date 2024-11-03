@@ -156,7 +156,7 @@ frame *Frame_CreateFromList(PyObject *data, PyObject *columns)
     for (size_t i = 0; i < cols; i++)
     {
       // Calculate size to allocate like Col 1 => 6, Col 2 => 6, Col 100 => 8, Col 6780 => 9
-      size_t size_to_allocate = 5 + Count_Digits(cols);
+      size_t size_to_allocate = 5 + Count_Digits(cols); // "Col " + digits + '\0'
       char *col_name = (char *)malloc(size_to_allocate * sizeof(char));
       if (col_name == NULL)
       {
@@ -253,7 +253,7 @@ frame *Frame_CreateFromDict(PyObject *data)
 
   size_t rows = PyList_GET_SIZE(first_value);
 
-  frame *f = frame_init(cols, NULL, IN_MEMORY, 1, 0);
+  frame *f = frame_init(cols, NULL, IN_MEMORY, LP_TRUE, LP_FALSE);
   if (f == NULL)
   {
     PyErr_SetString(PyExc_RuntimeError, "Error creating DataFrame");
@@ -333,7 +333,7 @@ frame *Frame_CreateFromDict(PyObject *data)
     }
   }
 
-  f->rows = rows; // + 1 for headers
+  f->rows = rows + 1; // + 1 for headers
   return f;
 }
 

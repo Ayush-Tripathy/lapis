@@ -28,6 +28,10 @@ lp_storage_t *lp_storage_init(lp_storage_type type, lp_shape shape, lp_string *c
       storage->col_names[i][len] = '\0';
     }
   }
+  else
+  {
+    storage->col_names = NULL;
+  }
 
   switch (type)
   {
@@ -143,71 +147,184 @@ void lp_storage_free(lp_storage_t *storage)
     return;
   }
 
+  lp_size_t cols;
+  if (storage->_shape.cols)
+    cols = storage->_shape.cols;
+  else
+    cols = 0;
+
   if (storage->ref_count > 0)
   {
     storage->ref_count--;
     return;
   }
 
-  switch (storage->type)
+  if (storage->type)
   {
-  case MMAPPED:
-    if (storage->data.cols != NULL)
+    switch (storage->type)
     {
-      for (size_t i = 0; i < storage->_shape.cols; i++)
+    case MMAPPED:
+      if (storage->data.cols != NULL)
       {
-        dynamic_array_free(storage->data.cols[i]);
+        if (cols > 0)
+        {
+          for (size_t i = 0; i < cols; i++)
+          {
+            if (storage->data.cols[i] != NULL)
+            { // Added NULL check
+              dynamic_array_free(storage->data.cols[i]);
+            }
+          }
+        }
+        free(storage->data.cols);
       }
-      free(storage->data.cols);
-    }
-    else
-    {
-      dynamic_array_free(storage->data.fields);
-    }
-
-    // Unmap file
-    if (storage->handle.mmapped->buffer != NULL)
-    {
-      unmap_file(storage->handle.mmapped->buffer, storage->handle.mmapped->buffer_size);
-    }
-
-    free(storage->handle.mmapped);
-    break;
-
-  case IN_MEMORY:
-    // if (storage->handle.in_memory != NULL)
-    // {
-    //     free(storage->handle.in_memory);
-    // }
-
-    if (storage->data.cols != NULL)
-    {
-      for (size_t i = 0; i < storage->_shape.cols; i++)
+      else if (storage->data.fields != NULL)
       {
-        dynamic_array_free(storage->data.cols[i]);
+        dynamic_array_free(storage->data.fields);
       }
-      free(storage->data.cols);
-    }
-    else
-    {
-      dynamic_array_free(storage->data.fields);
-    }
-    break;
 
-  default:
-    break;
+      if (storage->handle.mmapped != NULL)
+      { // Added NULL check
+        if (storage->handle.mmapped->buffer != NULL)
+        { // Nested NULL check
+          unmap_file(storage->handle.mmapped->buffer, storage->handle.mmapped->buffer_size);
+        }
+        free(storage->handle.mmapped);
+      }
+      break;
+
+    case IN_MEMORY:
+      if (storage->data.cols != NULL)
+      {
+        if (cols > 0)
+        {
+          for (size_t i = 0; i < cols; i++)
+          {
+            if (storage->data.cols[i] != NULL)
+            { // Added NULL check
+              dynamic_array_free(storage->data.cols[i]);
+            }
+          }
+        }
+        free(storage->data.cols);
+      }
+      else if (storage->data.fields != NULL)
+      {
+        dynamic_array_free(storage->data.fields);
+      }
+      break;
+
+    default:
+      break;
+    }
   }
 
   if (storage->col_names != NULL)
   {
-    for (size_t i = 0; i < storage->_shape.cols; i++)
+    if (cols > 0)
     {
-      free(storage->col_names[i]);
+      for (size_t i = 0; i < cols; i++)
+      {
+        if (storage->col_names[i] != NULL)
+        { // Added NULL check
+          free(storage->col_names[i]);
+        }
+      }
     }
     free(storage->col_names);
   }
 
-  free(storage);
+  if (storage != NULL)
+  {
+    free(storage);
+  }
+
+  // if (storage == NULL)
+  // {
+  //   return;
+  // }
+
+  // lp_size_t cols = storage->_shape.cols;
+
+  // if (storage->ref_count > 0)
+  // {
+  //   storage->ref_count--;
+  //   return;
+  // }
+
+  // switch (storage->type)
+  // {
+  // case MMAPPED:
+  //   if (storage->data.cols != NULL)
+  //   {
+  //     if (cols > 0)
+  //     {
+  //       for (size_t i = 0; i < cols; i++)
+  //       {
+  //         dynamic_array_free(storage->data.cols[i]);
+  //       }
+  //     }
+  //     free(storage->data.cols);
+  //   }
+  //   else if (storage->data.fields != NULL)
+  //   {
+  //     dynamic_array_free(storage->data.fields);
+  //   }
+
+  //   // Unmap file
+  //   if (storage->handle.mmapped->buffer != NULL)
+  //   {
+  //     unmap_file(storage->handle.mmapped->buffer, storage->handle.mmapped->buffer_size);
+  //   }
+
+  //   if (storage->handle.mmapped != NULL)
+  //   {
+  //     free(storage->handle.mmapped);
+  //   }
+  //   break;
+
+  // case IN_MEMORY:
+  //   // if (storage->handle.in_memory != NULL)
+  //   // {
+  //   //     free(storage->handle.in_memory);
+  //   // }
+
+  //   if (storage->data.cols != NULL)
+  //   {
+  //     if (cols > 0)
+  //     {
+  //       for (size_t i = 0; i < cols; i++)
+  //       {
+  //         dynamic_array_free(storage->data.cols[i]);
+  //       }
+  //     }
+  //     free(storage->data.cols);
+  //   }
+  //   else if (storage->data.fields != NULL)
+  //   {
+  //     dynamic_array_free(storage->data.fields);
+  //   }
+  //   break;
+
+  // default:
+  //   break;
+  // }
+
+  // if (storage->col_names != NULL)
+  // {
+  //   if (cols > 0)
+  //   {
+  //     for (size_t i = 0; i < cols; i++)
+  //     {
+  //       if (storage->col_names[i] != NULL)
+  //         free(storage->col_names[i]);
+  //     }
+  //   }
+  //   free(storage->col_names);
+  // }
+
+  // if (storage != NULL)
+  //   free(storage);
 }
 
 lp_bool lp_storage_is_mmapped(lp_storage_t *storage)

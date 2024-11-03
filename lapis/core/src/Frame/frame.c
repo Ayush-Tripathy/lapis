@@ -100,8 +100,6 @@ void frame_free(frame *f)
  * @brief Returns field at given row and column index.
  * It simply returns the field from the storage, if row 0 is accessed then it will return the header field (if present)
  *
- * // TODO: Implement IN_MEMORY storage get operation
- *
  * @param f: frame
  * @param row: row index
  * @param col: column index
@@ -127,30 +125,14 @@ lp_field_t *frame_get(frame *f, size_t row, size_t col)
       col = f->_col_indexes[col % f->cols];
   }
 
-  if (f->storage->type == MMAPPED)
+  if (f->storage->data.cols == NULL)
   {
-    if (f->storage->data.cols == NULL)
-    {
-      LOG_DEBUG("frame_get: f->storage->data.cols is NULL");
-      exit(1);
-    }
+    LOG_DEBUG("frame_get: f->storage->data.cols is NULL");
+    exit(1);
+  }
 
-    lp_field_t *field = (lp_field_t *)dynamic_array_get(f->storage->data.cols[col], row);
-    return field;
-  }
-  else if (f->storage->type == IN_MEMORY)
-  {
-    if (f->storage->data.cols != NULL)
-    {
-      lp_field_t *field = (lp_field_t *)dynamic_array_get(f->storage->data.cols[col], row);
-      return field;
-    }
-    else
-    {
-      lp_field_t *field = (lp_field_t *)dynamic_array_get(f->storage->data.fields, row);
-      return field;
-    }
-  }
+  lp_field_t *field = (lp_field_t *)dynamic_array_get(f->storage->data.cols[col], row);
+  return field;
 }
 
 /**
@@ -420,8 +402,8 @@ char *frame_str(frame *f)
   {
     buffer = NULL;
 
-    // Print column names
-    for (size_t i = 0; i < actual_cols - 1; i++)
+    // Print column names start
+    for (size_t i = 0; i < actual_cols - 1; i++) // Print all columns except last one, as we need to check if we need to print ...
     {
       lp_field_t *field = frame_get(f, 0, i);
 
@@ -486,8 +468,9 @@ char *frame_str(frame *f)
 
     len = snprintf(str + pos, str_len - pos, "|\n");
     pos += len;
+    // Print column names end
 
-    // Print rows
+    // Print rows start
     for (size_t i = 1; i < actual_rows; i++)
     {
       for (size_t j = 0; j < actual_cols - 1; j++)
@@ -611,9 +594,10 @@ char *frame_str(frame *f)
         pos += len;
       }
     }
+    // Print rows end
 
     // Attach shape
-    len = snprintf(str + pos, str_len - pos, "Shape: (%zu, %zu)\n", f->rows, f->cols);
+    len = snprintf(str + pos, str_len - pos, "Shape: (%zu, %zu)\n", has_header ? shape.rows - 1 : shape.rows, shape.cols);
   }
   return str;
 }

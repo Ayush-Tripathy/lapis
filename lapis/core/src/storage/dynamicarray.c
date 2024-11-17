@@ -51,6 +51,23 @@ void *dynamic_array_get(dynamic_array *array, size_t index)
   return (char *)array->data + (index * array->element_size);
 }
 
+void *dynamic_array_get_copy(dynamic_array *array, size_t index)
+{
+  if (index >= array->size)
+  {
+    return NULL;
+  }
+
+  void *destination = malloc(array->element_size);
+  if (destination == NULL)
+  {
+    return NULL;
+  }
+
+  memcpy(destination, (char *)array->data + (index * array->element_size), array->element_size);
+  return destination;
+}
+
 void *dynamic_array_set(dynamic_array *array, size_t index, void *element)
 {
   if (index >= array->size)
@@ -77,4 +94,19 @@ void dynamic_array_resize(dynamic_array *array, size_t new_capacity)
 {
   array->data = (void **)realloc(array->data, new_capacity * sizeof(void *));
   array->capacity = new_capacity;
+}
+
+dynamic_array *dynamic_array_copy(dynamic_array *src)
+{
+  dynamic_array *dest = dynamic_array_init(src->capacity, src->element_size);
+  if (dest == NULL)
+  {
+    return NULL;
+  }
+
+  // Copy raw memory from source to destination
+  memcpy(dest->data, src->data, src->size * src->element_size);
+  dest->size = src->size;
+
+  return dest;
 }

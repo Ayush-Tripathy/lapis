@@ -850,6 +850,36 @@ static PyObject *Frame_Free(Frame *self)
   Py_RETURN_NONE;
 }
 
+static PyObject *Frame_Sort(Frame *self, PyObject *args, PyObject *kwargs)
+{
+  const char *by_column;
+  lp_bool ascending = LP_TRUE;
+  const char *kind = "mergesort";
+
+  static char *kwlist[] = {"by", "ascending", "kind", NULL};
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|ps", kwlist, &by_column, &ascending, &kind))
+  {
+    return NULL;
+  }
+
+  lp_storage_t *sorted_storage = lp_sort_values(
+      self->_frame->storage,
+      by_column, ascending,
+      self->_frame->has_header,
+      self->_frame->cols,
+      kind);
+
+  if (sorted_storage == NULL)
+  {
+    PyErr_SetString(PyExc_RuntimeError, "Error sorting DataFrame");
+    return NULL;
+  }
+
+  self->_frame->storage = sorted_storage;
+  return Py_None;
+}
+
 static PySequenceMethods Frame_sequence_methods = {
     .sq_concat = NULL,                  /* concat */
     .sq_repeat = NULL,                  /* repeat */
@@ -872,6 +902,7 @@ static PyGetSetDef FrameGetSet[] = {
 static PyMethodDef FrameMethods[] = {
     {"get", (PyCFunction)Frame_GetRow, METH_VARARGS, "Get a row"},
     {"head", (PyCFunction)Frame_GetHead, METH_VARARGS, "Get the head"},
+    {"sort", (PyCFunction)Frame_Sort, METH_VARARGS | METH_KEYWORDS, "Sort based on specific column"},
     {NULL, NULL, 0, NULL}};
 
 // Frame type definition

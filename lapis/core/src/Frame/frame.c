@@ -127,7 +127,7 @@ lp_field_t *frame_get(frame *f, size_t row, size_t col)
 
   if (f->storage->data.cols == NULL)
   {
-    LOG_DEBUG("frame_get: f->storage->data.cols is NULL");
+    LOG_ERROR("frame_get: f->storage->data.cols is NULL");
     exit(1);
   }
 
@@ -149,20 +149,6 @@ lp_string frame_get_col_name(frame *f, size_t col)
     LOG_ERROR("frame_get_col_name: Invalid column index");
     exit(1);
   }
-
-  // if (f->storage->type == MMAPPED)
-  // {
-  //     if (f->storage->data.cols != NULL)
-  //     {
-  //         return (lp_field_t *)dynamic_array_get(f->storage->data.cols[col], 0);
-  //     }
-  //     else
-  //     {
-  //         return NULL;
-  //     }
-  // }
-  // else if (f->storage->type == IN_MEMORY)
-  // {
 
   lp_bool is_view = f->_is_view;
   lp_bool has_header = f->has_header;
@@ -186,7 +172,6 @@ lp_string frame_get_col_name(frame *f, size_t col)
   {
     return NULL;
   }
-  // }
 }
 
 /**
@@ -526,17 +511,21 @@ char *frame_str(frame *f)
       pos += len;
     }
 
-    if (rows > 4)
+    if (rows > 10)
     {
-      if (cols > 4)
+      if ((rows > 10 && !has_header) || (rows > 11 && has_header))
       {
-        len = snprintf(str + pos, str_len - pos, "| %*s | %*s | %*s | %*s | %*s |\n", CHARS_WIDTH, "...", CHARS_WIDTH, "...", CHARS_WIDTH, "...", CHARS_WIDTH, "...", CHARS_WIDTH, "...");
-        pos += len;
-      }
-      else
-      {
-        len = snprintf(str + pos, str_len - pos, "| %*s | %*s | %*s | %*s |\n", CHARS_WIDTH, "...", CHARS_WIDTH, "...", CHARS_WIDTH, "...", CHARS_WIDTH, "...");
-        pos += len;
+
+        if (cols > 4)
+        {
+          len = snprintf(str + pos, str_len - pos, "| %*s | %*s | %*s | %*s | %*s |\n", CHARS_WIDTH, "...", CHARS_WIDTH, "...", CHARS_WIDTH, "...", CHARS_WIDTH, "...", CHARS_WIDTH, "...");
+          pos += len;
+        }
+        else
+        {
+          len = snprintf(str + pos, str_len - pos, "| %*s | %*s | %*s | %*s |\n", CHARS_WIDTH, "...", CHARS_WIDTH, "...", CHARS_WIDTH, "...", CHARS_WIDTH, "...");
+          pos += len;
+        }
       }
 
       for (size_t i = rows - 1; i < rows; i++)

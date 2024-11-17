@@ -1,5 +1,5 @@
-#ifndef FRAME_H
-#define FRAME_H
+#ifndef LP_FRAME_H
+#define LP_FRAME_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,7 +15,7 @@
 #include "storage.h"
 #include "logger.h"
 
-typedef struct
+typedef struct frame
 {
   size_t cols;
   size_t rows;
@@ -38,4 +38,4 @@ lp_size_t frame_get_col_index(frame *f, const char *col_name);
 lp_shape frame_get_shape(frame *f);
 static lp_string frame_get_value_as_string(frame *f, size_t row, size_t col);
 
-#endif // FRAME_H
+#endif // LP_FRAME_H

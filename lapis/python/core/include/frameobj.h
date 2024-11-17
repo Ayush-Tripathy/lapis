@@ -4,6 +4,7 @@
 #include <structmember.h>
 
 #include "frame.h"
+#include "sort.h"
 
 typedef struct Frame
 {

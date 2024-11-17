@@ -238,93 +238,6 @@ void lp_storage_free(lp_storage_t *storage)
   {
     free(storage);
   }
-
-  // if (storage == NULL)
-  // {
-  //   return;
-  // }
-
-  // lp_size_t cols = storage->_shape.cols;
-
-  // if (storage->ref_count > 0)
-  // {
-  //   storage->ref_count--;
-  //   return;
-  // }
-
-  // switch (storage->type)
-  // {
-  // case MMAPPED:
-  //   if (storage->data.cols != NULL)
-  //   {
-  //     if (cols > 0)
-  //     {
-  //       for (size_t i = 0; i < cols; i++)
-  //       {
-  //         dynamic_array_free(storage->data.cols[i]);
-  //       }
-  //     }
-  //     free(storage->data.cols);
-  //   }
-  //   else if (storage->data.fields != NULL)
-  //   {
-  //     dynamic_array_free(storage->data.fields);
-  //   }
-
-  //   // Unmap file
-  //   if (storage->handle.mmapped->buffer != NULL)
-  //   {
-  //     unmap_file(storage->handle.mmapped->buffer, storage->handle.mmapped->buffer_size);
-  //   }
-
-  //   if (storage->handle.mmapped != NULL)
-  //   {
-  //     free(storage->handle.mmapped);
-  //   }
-  //   break;
-
-  // case IN_MEMORY:
-  //   // if (storage->handle.in_memory != NULL)
-  //   // {
-  //   //     free(storage->handle.in_memory);
-  //   // }
-
-  //   if (storage->data.cols != NULL)
-  //   {
-  //     if (cols > 0)
-  //     {
-  //       for (size_t i = 0; i < cols; i++)
-  //       {
-  //         dynamic_array_free(storage->data.cols[i]);
-  //       }
-  //     }
-  //     free(storage->data.cols);
-  //   }
-  //   else if (storage->data.fields != NULL)
-  //   {
-  //     dynamic_array_free(storage->data.fields);
-  //   }
-  //   break;
-
-  // default:
-  //   break;
-  // }
-
-  // if (storage->col_names != NULL)
-  // {
-  //   if (cols > 0)
-  //   {
-  //     for (size_t i = 0; i < cols; i++)
-  //     {
-  //       if (storage->col_names[i] != NULL)
-  //         free(storage->col_names[i]);
-  //     }
-  //   }
-  //   free(storage->col_names);
-  // }
-
-  // if (storage != NULL)
-  //   free(storage);
 }
 
 lp_bool lp_storage_is_mmapped(lp_storage_t *storage)
@@ -439,11 +352,26 @@ lp_bool lp_storage_dec_mem_used(lp_storage_t *storage, size_t mem_used)
 
 lp_size_t lp_storage_get_col_index(lp_storage_t *storage, const char *col_name)
 {
-  for (size_t i = 0; i < storage->_shape.cols; i++)
+  if (storage->type == MMAPPED)
   {
-    if (strcmp(storage->col_names[i], col_name) == 0)
+    for (size_t i = 0; i < storage->_shape.cols; i++)
     {
-      return i;
+      if (strcmp(storage->col_names[i], col_name) == 0)
+      {
+        return i;
+      }
+    }
+  }
+  else if (storage->type == IN_MEMORY)
+  {
+    for (size_t col = 0; col < storage->_shape.cols; col++)
+    {
+      lp_field_t *field = (lp_field_t *)dynamic_array_get(storage->data.cols[col], 0);
+
+      if (strcmp(field->buffer, col_name) == 0)
+      {
+        return col;
+      }
     }
   }
 

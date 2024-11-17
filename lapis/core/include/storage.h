@@ -134,7 +134,7 @@ typedef struct storage_t
   } handle;
 
   /* Data structures for storing actual data or references for 1D, 2D (column storage) */
-  union
+  union data
   {
     // lp_mmapped_data *mmapped;     /* Memory mapped fields */
     // lp_in_memory_data *in_memory; /* In-memory fields */

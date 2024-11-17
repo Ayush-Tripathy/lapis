@@ -64,23 +64,6 @@ typedef struct field_t
   lp_size_t _mem_used;
 } lp_field_t;
 
-/* Memory mapped field */
-// typedef struct
-// {
-//     size_t start;
-//     size_t end;
-//     lp_bool quoted;
-//     lp_dtype dtype;
-// } lp_ffield_t;
-
-/* In-memory field */
-// typedef struct mfield_t
-// {
-//     char *buffer;
-//     lp_bool quoted;
-//     lp_dtype dtype;
-// } lp_mfield_t;
-
 /* Memory mapped handle */
 typedef struct mmapped_t
 {
@@ -100,24 +83,6 @@ typedef struct mmapped_t
 //     lp_bool is_2d;
 // } lp_in_memory_t;
 
-// Memory mapped fields for 1D, 2D
-typedef union mmapped
-{
-  // lp_ffield_t *fields;
-  // lp_ffield_t **cols;
-  dynamic_array *fields;
-  dynamic_array **cols;
-} lp_mmapped_data;
-
-// In-memory fields for 1D, 2D
-typedef union in_memory
-{
-  // lp_mfield_t *fields;
-  // lp_mfield_t **cols;
-  dynamic_array *fields;
-  dynamic_array **cols;
-} lp_in_memory_data;
-
 /* Storage handle, every structure frame, series should use this to maintain storage */
 typedef struct storage_t
 {
@@ -130,14 +95,12 @@ typedef struct storage_t
   union
   {
     lp_mmapped_t *mmapped; /* Memory mapped handle */
-                           // lp_in_memory_t *in_memory; /* In-memory handle */
+    // lp_in_memory_t *in_memory; /* In-memory handle */
   } handle;
 
   /* Data structures for storing actual data or references for 1D, 2D (column storage) */
   union data
   {
-    // lp_mmapped_data *mmapped;     /* Memory mapped fields */
-    // lp_in_memory_data *in_memory; /* In-memory fields */
     dynamic_array *fields;
     dynamic_array **cols;
   } data;

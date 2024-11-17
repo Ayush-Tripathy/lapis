@@ -54,16 +54,14 @@ lp_storage_t *lp_sort_values(
 
   lp_dtype dtype = get_column_dtype(storage, column_index, has_header);
   dynamic_array *column_data = storage->data.cols[column_index];
-
   size_t n = dynamic_array_size(column_data);
-
-  if (strcmp(kind, "timsort") == 0)
+  if (strcmp(kind, "timsort") == 0) // TODO: fix timsort
   {
     lp_tim_sort(column_index, column_data, n, dtype, storage->type, has_header, cols, storage->data.cols);
   }
   else if (strcmp(kind, "mergesort") == 0)
   {
-    lp_merge_sort(column_index, column_data, n, dtype, storage->type, has_header, cols, storage->data.cols);
+    lp_merge_sort(column_index, column_data, n, dtype, storage->type, has_header, cols, storage->data.cols, storage);
   }
   else
   {

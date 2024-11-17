@@ -15,4 +15,5 @@ dynamic_array *lp_merge_sort(
     lp_storage_type stype,
     lp_bool has_header,
     lp_size_t cols,
-    dynamic_array **col_data);
+    dynamic_array **col_data,
+    lp_storage_t *storage);
